@@ -13,6 +13,9 @@ def main(argc:"int", argv:list[str]) -> None:
     SCREEN_W, SCREEN_H = pygame.display.Info().current_w, pygame.display.Info().current_h
     screen = pygame.display.set_mode((SCREEN_W,SCREEN_H))
     screen.fill(SCREEN_COLUR)
+    pygame.display.set_caption("AI, Game")
+    ICON: pygame.surface = pygame.image.load("car.png")
+    pygame.display.set_icon(ICON)
 
     clock = pygame.time.Clock()
     
@@ -25,27 +28,51 @@ def main(argc:"int", argv:list[str]) -> None:
     }
     
     class car:
-        def __init__(self, frame="car.png") -> None:
+        def __init__(self, frame="car.png", terminal_velocity:"int"=10) -> None:
             self.acceleration: float = 0.0
             self.velocity: float = 0.0
             self.x: int = SCREEN_W / 2
             self.y: int = SCREEN_H / 2
             self.angle: float = 0
+            self.TERMINAL_VELOCITY: "float" = terminal_velocity
+
             self.frame: pygame.Surface = pygame.image.load("car.png")
             self.frame = pygame.transform.scale(self.frame, (SCREEN_W/16, SCREEN_H/16))
             self.frame = pygame.transform.rotate(self.frame, self.angle)
             self.frame.set_colorkey(SCREEN_COLUR)
             self.frame_copy = None
-        def update(self) -> None:
-            self.frame_copy = pygame.transform.rotate(self.frame, self.angle-90)
-            screen.blit(self.frame_copy, (self.x - int(self.frame_copy.get_width()/2), self.y - int(self.frame_copy.get_height()/2)))
-        def move(self, direction:"float", velocity:"float") -> None:
+        def update(self) -> None:   
+            pressed = pygame.key.get_pressed()
+
             radians = math.radians(self.angle)
             vertical = math.cos(radians) * self.velocity
             horizontal = math.sin(radians) * self.velocity
 
             self.x += horizontal
             self.y += vertical
+
+            if pressed[pygame.K_UP]:
+                self.velocity += SCREEN_W/2000
+            elif pressed[pygame.K_DOWN]:
+                self.velocity -= SCREEN_W/2000
+            else: 
+                if self.velocity > 0: self.velocity -= SCREEN_W/20000
+                elif self.velocity < 0: self.velocity += SCREEN_W/20000
+
+            #if self.velocity < 0 : self.velocity = 0
+
+            if pressed[pygame.K_LEFT]:
+                self.angle += self.velocity/2         
+
+            if pressed[pygame.K_RIGHT]:
+                self.angle -= self.velocity/2
+
+            self.frame_copy = pygame.transform.rotate(self.frame, self.angle-90)
+            screen.blit(self.frame_copy, (self.x - int(self.frame_copy.get_width()/2), self.y - int(self.frame_copy.get_height()/2)))
+            if self.velocity > self.TERMINAL_VELOCITY:
+                self.velocity = self.TERMINAL_VELOCITY
+            elif self.velocity < -(self.TERMINAL_VELOCITY/2):
+                self.velocity = -(self.TERMINAL_VELOCITY/2)
 
     greencar = car()
     running = True
@@ -67,24 +94,6 @@ def main(argc:"int", argv:list[str]) -> None:
             if event.type == pygame.QUIT:
                 running = False
             
-        
-        if mouse or pressed[pygame.K_UP]:
-            greencar.velocity += SCREEN_W/20000
-        elif mouse or pressed[pygame.K_DOWN]:
-            greencar.velocity -= SCREEN_W/20000
-        else: 
-            if greencar.velocity > 0: greencar.velocity -= SCREEN_W/20000
-            elif greencar.velocity < 0: greencar.velocity += SCREEN_W/20000
-
-        #if greencar.velocity < 0 : greencar.velocity = 0
-
-        greencar.move(greencar.angle, greencar.velocity)
-
-        if pressed[pygame.K_LEFT]:
-            greencar.angle += greencar.velocity/6
-
-        if pressed[pygame.K_RIGHT]:
-            greencar.angle -= greencar.velocity/6
 
                 
         greencar.update()
