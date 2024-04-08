@@ -28,15 +28,21 @@ def main(argc:"int", argv:list[str]) -> None:
     }
     
     class car:
-        def __init__(self, frame="car.png", terminal_velocity:"int"=10) -> None:
+        def __init__(self, frame="car.png", terminal_velocity:"int"=10, control:"str"="arrow") -> None:
+            """
+            control, arrowkeys or WASD (for movement CONST)
+            terminal_velocity, max speed (half of it is max speed backwards)
+            frame, the image being rendered
+            """
             self.acceleration: float = 0.0
             self.velocity: float = 0.0
             self.x: int = SCREEN_W / 2
             self.y: int = SCREEN_H / 2
             self.angle: float = 0
+            self.CONTROL = control
             self.TERMINAL_VELOCITY: "float" = terminal_velocity
 
-            self.frame: pygame.Surface = pygame.image.load("car.png")
+            self.frame: pygame.Surface = pygame.image.load(frame)
             self.frame = pygame.transform.scale(self.frame, (SCREEN_W/16, SCREEN_H/16))
             self.frame = pygame.transform.rotate(self.frame, self.angle)
             self.frame.set_colorkey(SCREEN_COLUR)
@@ -51,9 +57,28 @@ def main(argc:"int", argv:list[str]) -> None:
             self.x += horizontal
             self.y += vertical
 
-            if pressed[pygame.K_UP]:
+            controlKeys: dict = {"forward":pygame.K_UP, "rotate-":pygame.K_LEFT, "reverse":pygame.K_DOWN, "rotate+":pygame.K_RIGHT}
+            if self.CONTROL.lower() == "arrow":
+                controlKeys = {
+                    "forward":pygame.K_UP,
+                    "rotate-":pygame.K_LEFT,
+                    "reverse":pygame.K_DOWN,
+                    "rotate+":pygame.K_RIGHT
+                    
+                }
+            elif self.CONTROL.upper() == "WASD":
+                controlKeys = {
+                    "forward":pygame.K_w,
+                    "rotate+":pygame.K_a,
+                    "reverse":pygame.K_s,
+                    "rotate-":pygame.K_d
+                    
+                }
+            else: controlKeys = {"forward":pygame.K_UP, "rotate-":pygame.K_LEFT, "reverse":pygame.K_DOWN, "rotate+":pygame.K_RIGHT}
+
+            if pressed[controlKeys["forward"]]:
                 self.velocity += SCREEN_W/2000
-            elif pressed[pygame.K_DOWN]:
+            elif pressed[controlKeys["reverse"]]:
                 self.velocity -= SCREEN_W/2000
             else: 
                 if self.velocity > 0: self.velocity -= SCREEN_W/20000
@@ -61,10 +86,10 @@ def main(argc:"int", argv:list[str]) -> None:
 
             #if self.velocity < 0 : self.velocity = 0
 
-            if pressed[pygame.K_LEFT]:
+            if pressed[controlKeys["rotate+"]]:
                 self.angle += self.velocity/2         
 
-            if pressed[pygame.K_RIGHT]:
+            if pressed[controlKeys["rotate-"]]:
                 self.angle -= self.velocity/2
 
             self.frame_copy = pygame.transform.rotate(self.frame, self.angle-90)
@@ -75,6 +100,7 @@ def main(argc:"int", argv:list[str]) -> None:
                 self.velocity = -(self.TERMINAL_VELOCITY/2)
 
     greencar = car()
+    redCar = car(frame="car red.png", control="wasd")
     running = True
     while running:
         frame+=1
@@ -95,7 +121,7 @@ def main(argc:"int", argv:list[str]) -> None:
                 running = False
             
 
-                
+        redCar.update()        
         greencar.update()
         screen.blit(text, (SCREEN_W+(SCREEN_W/16), SCREEN_H+(SCREEN_H/16)))
         
