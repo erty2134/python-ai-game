@@ -25,10 +25,10 @@ def main(argc:"int", argv:list[str]) -> None:
     class car:
         def __init__(self, frame="car.png", terminal_velocity:"int"=10, control:"str"="arrow", invert_control_rotate:"bool"=True) -> None:
             """
-            control, arrowkeys or WASD (for movement CONST)
-            invert_control_rotate, reverse rotation or not
-            terminal_velocity, max speed (half of it is max speed backwards)
-            frame, the image being rendered
+            control, arrowkeys or WASD (for movement CONST)\n
+            invert_control_rotate, reverse rotation or not\n
+            terminal_velocity, max speed (half of it is max speed backwards)\n
+            frame, the image being rendered\n
             """
             self.acceleration: float = 0.0
             self.velocity: float = 0.0
